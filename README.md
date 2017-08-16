@@ -6,12 +6,12 @@ Library to simplfy integrating RxJava with the Flux Architecture in Android.
 This architecture system is designed to allow for linear data flow, immutability, control of traffic flow etc.
 
  * Eliminate creating custom Events or Actions for Eventbus.
- * Worry about creating Action methods and not observables and posting to the event bus extend ActionCreators with FluxionActionCreator and postAction().
- * No more eventbus subscribe methods throughout the application implement FluxionViewInterface in Activities and BaseFluxionViewInterface in Fragments, and Adapters.
+ * Worry about creating Action methods and not observables and posting to the event bus extend ActionCreators with FluxActionCreator and postAction().
+ * No more eventbus subscribe methods throughout the application implement FluxViewInterface in Activities and BaseFluxViewInterface in Fragments, and Adapters.
  * Post store change.
 
 ```java
-class ExampleActivity extends Activity implement FluxionViewInterface{
+class ExampleActivity extends Activity implements FluxViewInterface {
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -23,15 +23,16 @@ class ExampleActivity extends Activity implement FluxionViewInterface{
   void onRegisterStores(){
     store.register();
   }
-  void onReact(Reaction fluxReaction){
-    switch(fluxReaction.getType()){
+  
+  void onReact(FluxReaction reaction){
+    switch(reaction.getType()){
       case Reactions.SOME_DISTINCT_REACTION:
         break;
     }
   }
 
   void onStoreChangedError(StoreChangeError error){
-    if(error.getThrowable() instanceOf SomeCustomException){
+    if(error.getThrowable() instanceOf SomeCustomException) {
       //Do something with views
     }
   }
@@ -67,16 +68,16 @@ Actions Creators are Synchronous which means you should not be doing any work. I
 1. Create New Class ActionsCreator
 2. Create Corresponding Actions interface
 3. Extend RxActionCreator
-4. implement Actions interface
+4. Implement Actions interface
 5. Override methods in Actions interface
-6. call FluxionActionCreator  postAction(String actionId, Object... data) in Actions Interface method definition.
-7. done
+6. Call FluxActionCreator  postAction(String actionId, Object... data) in Actions Interface method definition.
+7. Profit.
 
 
 
 ```java
 
-class ActionCreator extends FluxionActionCreator implements Actions{
+class ActionCreator extends FluxActionCreator implements Actions {
 
     public ActionCreator(Dispatcher dispatcher,SubscriptionManager manager){
       super(dispatcher,manager);
@@ -114,7 +115,7 @@ class AppStore extends RxStore implements AppStoreInterface {
     }
 
     @Override
-    public void onFluxionAction(RxAction action) {
+    public void onFluxAction(RxAction action) {
       switch(action.getType){
         case {ActionInterface}.{ACTION}
           //do something
@@ -126,14 +127,14 @@ class AppStore extends RxStore implements AppStoreInterface {
 
 //Emitting storeChangeError Views to once some work has failed and or application state could not be changed
 //This postChangeError() method will cause the dispatcher to call all Views registered to listen to store changes and call their onStoreChangedError inherited method
-class AppStore extends FluxionStore implements AppStoreInterface {
+class AppStore extends FluxStore implements AppStoreInterface {
 
     public AppStore(Dispatcher dispatcher){
       super(dispatcher);
     }
 
     @Override
-    public void onFluxionAction(FluxionAction action){
+    public void onFluxAction(FluxAction action){
       switch(action.getType){
         case {ActionInterface}.{ACTION}
           //something failed to happen
@@ -151,7 +152,7 @@ An ApiStore Example
 *This is an example using Ion*
 
 ```java
-public class ApiStore extends FluxionStore implements ApiStoreInterface {
+public class ApiStore extends FluxStore implements ApiStoreInterface {
 
 private Ion mIon;
 private Context mContext;
@@ -165,32 +166,34 @@ public ApiStore(Dispatcher dispatcher, App app, Ion ion) {
 }
 
 @Override
-public void onFluxionAction(FluxionAction action) {
+public void onFluxAction(FluxAction action) {
 	switch(action.getType()) {
 		case ApiActions.MAKE_SOME_NETWORK_REQUEST:
 			if(!internetAvailable){
 				postChangeError(new StoreChangeError(new NoInternetConnectionError(NO_INTERNET_MESSAGE)));
-			}else {
+			} else {
 				Observable.just(getUsers(action))
 					  .subscribeOn(Schedulers.io())
 					  .observeOn(AndroidSchedulers.mainThread())
 					  .subscribe(result -> {
 						     if(result == null || !result.isSuccess()){
-							    postChangeError(new StoreChangeError( NetworkRequestException("Message")));
-						     }else if(result.isSuccess()) {
-							          mUsers = result; //Store state of request so list of users this is good if you make multiple requests and you can give add this as a time, value pair and if this state has been updated in say the last 5 mins use it instead of sending another action to the action creator to make this network call.
+							    postChangeError(new StoreChangeError(new NetworkRequestException("Message")));
+						     } else if(result.isSuccess()) {
+						     // Store state of request as list of users.
+							          mUsers = result; 
 							          postReaction(Reactions.SUCCESSFUL_USER_API_ENDPOINT_CALL);
-						     }});
-			}
-				break;
+						     };
+	
+			});
+		}
+		break;
 	}
-}
 
 /**
 This method would be placed inside on the ApiStoreInterface.java
 **/
   @Override
-  public Person getUsers(){
+  public Person getUsers() {
     return mUsers;
   }
 
@@ -200,7 +203,11 @@ This is clean and simplified way to use Ion as an Object and make Synchronous ca
 private List<Person> getUsersRequest(final RxAction action) {
 	List<Person> users = new ArrayList();
 	try {
-		users = mIon.build(mContext).load(POST,BuildConfig.BACKEND + GET_USERS_ENDPOINT).setBodyParameters(createPostParams(new ApiAuth(action.get(Keys.USER_API_CRED)))).as(new TypeToken<List<Person>>() {}).get();
+		users = mIon.build(mContext)
+		    .load(POST,BuildConfig.BACKEND + GET_USERS_ENDPOINT)
+		    .setBodyParameters(createPostParams(new ApiAuth(action.get(Keys.USER_API_CRED))))
+		    .as(new TypeToken<List<Person>>() {})
+		    .get();
 	}catch(Exception ie){
 		ie.printStackTrace();
 	}

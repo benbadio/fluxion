@@ -3,23 +3,22 @@ package com.nigelbrown.fluxion;
 import android.support.v4.util.ArrayMap;
 
 /**
- * Represents a store change to be reacted upon by one or more flux views.
- * The reaction must include a type and may include data to be handed to the views
- * when the reaction is posted.
+ * Represents operation to be performed by one or more {@link FluxStore stores}.
+ * The action must include a type and may include data to be used by stores when the action is being performed.
  */
-public class Reaction {
+public class FluxAction {
     private final String mType;
     private final ArrayMap<String, Object> mData;
 
-    Reaction(String type, ArrayMap<String, Object> data) {
+    FluxAction(String type, ArrayMap<String, Object> data) {
         this.mType = type;
         this.mData = data;
     }
 
     /**
-     * Set the reaction's type.
+     * Set the action's type.
      *
-     * @param type An identifier for the reaction. Action/Reaction type strings are used throughout the Flux architectural flow
+     * @param type An identifier for the action. Action type strings are used throughout the Flux architectural flow
      *             and should be publicly accessible.
      * @return A builder object to allow for chaining of calls to set methods
      */
@@ -27,19 +26,22 @@ public class Reaction {
         return new Builder().with(type);
     }
 
+    /**
+     * @return The action's type
+     */
     public String getType() {
         return mType;
     }
 
     /**
-     * @return A map of the reaction's data
+     * @return A map of the action's data
      */
     public ArrayMap<String, Object> getData() {
         return mData;
     }
 
     /**
-     * Retrieves a specific data object from the reaction's data map.
+     * Retrieves a specific data object from the action's data map.
      *
      * @param key The key of the data being requested
      * @return The data object corresponding to the entered key
@@ -52,10 +54,10 @@ public class Reaction {
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
-        if (!(o instanceof Reaction)) { return false; }
-        Reaction reaction = (Reaction) o;
-        if (!mType.equals(reaction.mType)) { return false; }
-        return !(mData != null ? !mData.equals(reaction.mData) : reaction.mData != null);
+        if (!(o instanceof FluxAction)) { return false; }
+        FluxAction fluxAction = (FluxAction) o;
+        if (!mType.equals(fluxAction.mType)) { return false; }
+        return !(mData != null ? !mData.equals(fluxAction.mData) : fluxAction.mData != null);
     }
 
     @Override
@@ -67,14 +69,14 @@ public class Reaction {
 
     @Override
     public String toString() {
-        return "FluxionReaction{" + "mType='" + mType + '\'' + ", mData=" + mData + '}';
+        return "FluxAction{" + "mType='" + mType + '\'' + ", mData=" + mData + '}';
     }
 
-    public static class Builder {
+    static class Builder {
         private String type;
         private ArrayMap<String, Object> data;
 
-        Builder with(String type) {
+        private Builder with(String type) {
             if (type == null) {
                 throw new IllegalArgumentException("Type may not be null.");
             }
@@ -83,7 +85,7 @@ public class Reaction {
             return this;
         }
 
-        public Builder bundle(String key, Object value) {
+        Builder bundle(String key, Object value) {
             if (key == null) {
                 throw new IllegalArgumentException("Key may not be null.");
             }
@@ -94,11 +96,11 @@ public class Reaction {
             return this;
         }
 
-        public Reaction build() {
+        FluxAction build() {
             if (type == null || type.isEmpty()) {
                 throw new IllegalArgumentException("At least one key is required.");
             }
-            return new Reaction(type, data);
+            return new FluxAction(type, data);
         }
     }
 }

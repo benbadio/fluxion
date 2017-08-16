@@ -3,16 +3,16 @@ package com.nigelbrown.fluxion;
 // TODO: 8/16/2017 Is this still needed?
 public class StoreChange {
 	private String mStoreId;
-	private FluxionAction mFluxionAction;
+    private FluxAction mFluxAction;
 
-	public StoreChange(String storeId, FluxionAction fluxionAction) {
-		this.mStoreId = storeId;
-		this.mFluxionAction = fluxionAction;
-	}
+    public StoreChange(String storeId, FluxAction fluxAction) {
+        this.mStoreId = storeId;
+        this.mFluxAction = fluxAction;
+    }
 
-	public FluxionAction getFluxionAction() {
-		return mFluxionAction;
-	}
+    public FluxAction getFluxAction() {
+        return mFluxAction;
+    }
 
 	public String getStoreId() {
 		return mStoreId;

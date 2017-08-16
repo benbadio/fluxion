@@ -23,8 +23,8 @@ class ExampleActivity extends Activity implement FluxionViewInterface{
   void onRegisterStores(){
     store.register();
   }
-  void onReact(Reaction reaction){
-    switch(reaction.getType()){
+  void onReact(Reaction fluxReaction){
+    switch(fluxReaction.getType()){
       case Reactions.SOME_DISTINCT_REACTION:
         break;
     }

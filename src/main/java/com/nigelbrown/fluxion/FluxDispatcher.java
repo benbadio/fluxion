@@ -7,64 +7,64 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 
 /**
- * The dispatcher sends {@link FluxionAction actions} to all {@link FluxionStore stores}
+ * The dispatcher sends {@link FluxAction actions} to all {@link FluxStore stores}
  * via registered callbacks. Stores must be registered with the dispatcher to receive actions.
  */
-public class FluxionDispatcher {
-    private static FluxionDispatcher sInstance;
-    private final FluxionBus mBus;
+public class FluxDispatcher {
+    private static FluxDispatcher sInstance;
+    private final FluxBus mBus;
     private ArrayMap<String, Subscription> mFluxionActionMap;
     private ArrayMap<String, Subscription> mFluxionStoreMap;
 
-    private FluxionDispatcher(FluxionBus bus) {
+    private FluxDispatcher(FluxBus bus) {
         this.mBus = bus;
         this.mFluxionActionMap = new ArrayMap<>();
         this.mFluxionStoreMap = new ArrayMap<>();
     }
 
-    static synchronized FluxionDispatcher getInstance(FluxionBus fluxionBus) {
-        if (sInstance == null) { sInstance = new FluxionDispatcher(fluxionBus); }
+    static synchronized FluxDispatcher getInstance(FluxBus fluxBus) {
+        if (sInstance == null) { sInstance = new FluxDispatcher(fluxBus); }
         return sInstance;
     }
 
-    public <T extends FluxionActionInterface> void registerFluxionAction(final T object) {
+    public <T extends FluxActionInterface> void registerFluxionAction(final T object) {
         final String tag = object.getClass().getSimpleName();
         Subscription subscription = mFluxionActionMap.get(tag);
         if (subscription == null || subscription.isUnsubscribed()) {
             mFluxionActionMap.put(tag, mBus.get().filter(new Func1<Object, Boolean>() {
                 @Override
                 public Boolean call(Object o) {
-                    return o instanceof FluxionAction;
+                    return o instanceof FluxAction;
                 }
             }).subscribe(new Action1<Object>() {
                 @Override
                 public void call(Object o) {
-                    object.onFluxionAction((FluxionAction) o);
+                    object.onFluxionAction((FluxAction) o);
                 }
             }));
         }
     }
 
-    public <T extends BaseFluxionViewInterface> void registerReaction(final T object) {
+    public <T extends BaseFluxViewInterface> void registerReaction(final T object) {
         final String tag = object.getClass().getSimpleName();
         Subscription subscription = mFluxionStoreMap.get(tag);
         if (subscription == null || subscription.isUnsubscribed()) {
             mFluxionStoreMap.put(tag, mBus.get().filter(new Func1<Object, Boolean>() {
                 @Override
                 public Boolean call(Object o) {
-                    return o instanceof Reaction;
+                    return o instanceof FluxReaction;
                 }
             }).subscribe(new Action1<Object>() {
                 @Override
                 public void call(Object o) {
-                    object.onReact((Reaction) o);
+                    object.onReact((FluxReaction) o);
                 }
             }));
         }
         registerFluxionStoreError(object);
     }
 
-    public <T extends BaseFluxionViewInterface> void registerFluxionStoreError(final T object) {
+    public <T extends BaseFluxViewInterface> void registerFluxionStoreError(final T object) {
         final String tag = object.getClass().getSimpleName() + "_error";
         Subscription subscription = mFluxionStoreMap.get(tag);
         if (subscription == null || subscription.isUnsubscribed()) {
@@ -83,25 +83,25 @@ public class FluxionDispatcher {
         registerFluxionError(object);
     }
 
-    public <T extends BaseFluxionViewInterface> void registerFluxionError(final T object) {
+    public <T extends BaseFluxViewInterface> void registerFluxionError(final T object) {
         final String tag = object.getClass().getSimpleName() + "_error";
         Subscription subscription = mFluxionActionMap.get(tag);
         if (subscription == null || subscription.isUnsubscribed()) {
             mFluxionActionMap.put(tag, mBus.get().filter(new Func1<Object, Boolean>() {
                 @Override
                 public Boolean call(Object o) {
-                    return o instanceof FluxionActionError;
+                    return o instanceof FluxActionError;
                 }
             }).subscribe(new Action1<Object>() {
                 @Override
                 public void call(Object o) {
-                    object.onActionError((FluxionActionError) o);
+                    object.onActionError((FluxActionError) o);
                 }
             }));
         }
     }
 
-    public <T extends FluxionActionInterface> void unregisterFluxionAction(final T object) {
+    public <T extends FluxActionInterface> void unregisterFluxionAction(final T object) {
         String tag = object.getClass().getSimpleName();
         Subscription subscription = mFluxionActionMap.get(tag);
         if (subscription != null && !subscription.isUnsubscribed()) {
@@ -110,7 +110,7 @@ public class FluxionDispatcher {
         }
     }
 
-    private <T extends BaseFluxionViewInterface> void unregisterFluxionStore(final T object) {
+    private <T extends BaseFluxViewInterface> void unregisterFluxionStore(final T object) {
         String tag = object.getClass().getSimpleName();
         Subscription subscription = mFluxionStoreMap.get(tag);
         if (subscription != null && !subscription.isUnsubscribed()) {
@@ -121,7 +121,7 @@ public class FluxionDispatcher {
         unregisterFluxionStoreError(object);
     }
 
-    private <T extends BaseFluxionViewInterface> void unregisterFluxionError(final T object) {
+    private <T extends BaseFluxViewInterface> void unregisterFluxionError(final T object) {
         String tag = object.getClass().getSimpleName() + "_error";
         Subscription subscription = mFluxionActionMap.get(tag);
         if (subscription != null && !subscription.isUnsubscribed()) {
@@ -130,7 +130,7 @@ public class FluxionDispatcher {
         }
     }
 
-    private <T extends BaseFluxionViewInterface> void unregisterFluxionStoreError(final T object) {
+    private <T extends BaseFluxViewInterface> void unregisterFluxionStoreError(final T object) {
         String tag = object.getClass().getSimpleName() + "_error";
         Subscription subscription = mFluxionStoreMap.get(tag);
         if (subscription != null && !subscription.isUnsubscribed()) {
@@ -154,26 +154,26 @@ public class FluxionDispatcher {
     }
 
     /**
-     * Unregister a {@link BaseFluxionViewInterface} view from the dispatcher
+     * Unregister a {@link BaseFluxViewInterface} view from the dispatcher
      *
      * @param object the view to be unregistered.
      */
-    public synchronized <T extends BaseFluxionViewInterface> void unregister(final T object) {
+    public synchronized <T extends BaseFluxViewInterface> void unregister(final T object) {
         unregisterFluxionError(object);
         unregisterFluxionStore(object);
         unregisterFluxionStoreError(object);
     }
 
-    void postFluxionAction(final FluxionAction action) {
+    void postFluxionAction(final FluxAction action) {
         mBus.send(action);
     }
 
-    void postFluxionActionError(final FluxionActionError actionError) {
+    void postFluxionActionError(final FluxActionError actionError) {
         mBus.send(actionError);
     }
 
-    void postReaction(final Reaction reaction) {
-        mBus.send(reaction);
+    void postReaction(final FluxReaction fluxReaction) {
+        mBus.send(fluxReaction);
     }
 
     void postFluxionStoreChangeError(final StoreChangeError storeChange) {

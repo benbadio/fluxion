@@ -5,33 +5,33 @@ import android.os.Bundle;
 /**
  * Stores are responsible for containing and updating application state. After
  * stores update themselves in response to an action, they emit a change event
- * (either {@link Reaction} or {@link StoreChangeError}). Views implementing
- * {@link BaseFluxionViewInterface} listen for and react to such events, and
+ * (either {@link FluxReaction} or {@link StoreChangeError}). Views implementing
+ * {@link BaseFluxViewInterface} listen for and react to such events, and
  * provide the new data to the entire tree of child views.
  */
-public abstract class FluxionStore implements FluxionActionInterface {
-    private final FluxionDispatcher mDispatcher;
+public abstract class FluxStore implements FluxActionInterface {
+    private final FluxDispatcher mDispatcher;
 
-    public FluxionStore(FluxionDispatcher dispatcher) {
+    public FluxStore(FluxDispatcher dispatcher) {
         this.mDispatcher = dispatcher;
     }
 
     /**
-     * Registers the store to the {@link FluxionDispatcher}. Call this method during initialization of a {@link BaseFluxionViewInterface view}
+     * Registers the store to the {@link FluxDispatcher}. Call this method during initialization of a {@link BaseFluxViewInterface view}
      * (for example, in {@link android.app.Activity#onCreate(Bundle) Activity.onCreate()}).
      */
     public void register() {
         mDispatcher.registerFluxionAction(this);
     }
 
-    private Reaction newReaction(String reactionId, Object... data) {
+    private FluxReaction newReaction(String reactionId, Object... data) {
         if (reactionId.isEmpty()) {
             throw new IllegalArgumentException("Type must not be empty");
         }
         if (data.length % 2 != 0) {
             throw new IllegalArgumentException("Data must be a valid list of key,value pairs");
         }
-        Reaction.Builder reactionBuilder = Reaction.type(reactionId);
+        FluxReaction.Builder reactionBuilder = FluxReaction.type(reactionId);
         int i = 0;
         while (i < data.length) {
             String key = (String) data[i++];
@@ -45,7 +45,7 @@ public abstract class FluxionStore implements FluxionActionInterface {
      * Post a store change to be reacted on by any views that have registered this store.
      *
      * @param reactionId An ID for the reaction. In most situations this would be the same ID from
-     *                   {@link FluxionAction} that originated th reaction.
+     *                   {@link FluxAction} that originated th reaction.
      * @param data       (<i>Optional</i>) Data to be passed to views when the reaction is posted. Data
      *                   parameters should be entered as key/value pairs.
      *                   <p>Example: If the store handled a GET_USERS action it would post a reaction

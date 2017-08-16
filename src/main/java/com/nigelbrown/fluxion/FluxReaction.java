@@ -3,22 +3,23 @@ package com.nigelbrown.fluxion;
 import android.support.v4.util.ArrayMap;
 
 /**
- * Represents operation to be performed by one or more {@link FluxionStore stores}.
- * The action must include a type and may include data to be used by stores when the action is being performed.
+ * Represents a store change to be reacted upon by one or more flux views.
+ * The reaction must include a type and may include data to be handed to the views
+ * when the reaction is posted.
  */
-public class FluxionAction {
+public class FluxReaction {
     private final String mType;
     private final ArrayMap<String, Object> mData;
 
-    FluxionAction(String type, ArrayMap<String, Object> data) {
+    FluxReaction(String type, ArrayMap<String, Object> data) {
         this.mType = type;
         this.mData = data;
     }
 
     /**
-     * Set the action's type.
+     * Set the reaction's type.
      *
-     * @param type An identifier for the action. Action type strings are used throughout the Flux architectural flow
+     * @param type An identifier for the reaction. Action/FluxReaction type strings are used throughout the Flux architectural flow
      *             and should be publicly accessible.
      * @return A builder object to allow for chaining of calls to set methods
      */
@@ -26,22 +27,19 @@ public class FluxionAction {
         return new Builder().with(type);
     }
 
-    /**
-     * @return The action's type
-     */
     public String getType() {
         return mType;
     }
 
     /**
-     * @return A map of the action's data
+     * @return A map of the reaction's data
      */
     public ArrayMap<String, Object> getData() {
         return mData;
     }
 
     /**
-     * Retrieves a specific data object from the action's data map.
+     * Retrieves a specific data object from the reaction's data map.
      *
      * @param key The key of the data being requested
      * @return The data object corresponding to the entered key
@@ -54,10 +52,10 @@ public class FluxionAction {
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
-        if (!(o instanceof FluxionAction)) { return false; }
-        FluxionAction fluxionAction = (FluxionAction) o;
-        if (!mType.equals(fluxionAction.mType)) { return false; }
-        return !(mData != null ? !mData.equals(fluxionAction.mData) : fluxionAction.mData != null);
+        if (!(o instanceof FluxReaction)) { return false; }
+        FluxReaction fluxReaction = (FluxReaction) o;
+        if (!mType.equals(fluxReaction.mType)) { return false; }
+        return !(mData != null ? !mData.equals(fluxReaction.mData) : fluxReaction.mData != null);
     }
 
     @Override
@@ -69,14 +67,14 @@ public class FluxionAction {
 
     @Override
     public String toString() {
-        return "FluxionAction{" + "mType='" + mType + '\'' + ", mData=" + mData + '}';
+        return "FluxionReaction{" + "mType='" + mType + '\'' + ", mData=" + mData + '}';
     }
 
-    static class Builder {
+    public static class Builder {
         private String type;
         private ArrayMap<String, Object> data;
 
-        private Builder with(String type) {
+        Builder with(String type) {
             if (type == null) {
                 throw new IllegalArgumentException("Type may not be null.");
             }
@@ -85,7 +83,7 @@ public class FluxionAction {
             return this;
         }
 
-        Builder bundle(String key, Object value) {
+        public Builder bundle(String key, Object value) {
             if (key == null) {
                 throw new IllegalArgumentException("Key may not be null.");
             }
@@ -96,11 +94,11 @@ public class FluxionAction {
             return this;
         }
 
-        FluxionAction build() {
+        public FluxReaction build() {
             if (type == null || type.isEmpty()) {
                 throw new IllegalArgumentException("At least one key is required.");
             }
-            return new FluxionAction(type, data);
+            return new FluxReaction(type, data);
         }
     }
 }

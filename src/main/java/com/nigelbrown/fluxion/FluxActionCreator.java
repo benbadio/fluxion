@@ -8,28 +8,28 @@ import rx.functions.Action1;
 
 /**
  * The Action Creator class, which should be used as a parent for all action creators.
- * <p><i></i>Action Creators</i> contain helper methods that create an {@link FluxionAction action} from method parameters,
- * assign it to a type, and provide the action to the {@link FluxionDispatcher dispatcher}. Once an action is received, the
- * dispatcher passes the action to the {@link FluxionStore#onFluxionAction(FluxionAction) onFluxionAction}
- * method of all {@link FluxionStore stores}.</p>
+ * <p><i></i>Action Creators</i> contain helper methods that create an {@link FluxAction action} from method parameters,
+ * assign it to a type, and provide the action to the {@link FluxDispatcher dispatcher}. Once an action is received, the
+ * dispatcher passes the action to the {@link FluxStore#onFluxionAction(FluxAction) onFluxionAction}
+ * method of all {@link FluxStore stores}.</p>
  */
-public abstract class FluxionActionCreator {
-    private final FluxionDispatcher mDispatcher;
+public abstract class FluxActionCreator {
+    private final FluxDispatcher mDispatcher;
     private final SubscriptionManager mManager;
 
-    public FluxionActionCreator(FluxionDispatcher dispatcher, SubscriptionManager manager) {
+    public FluxActionCreator(FluxDispatcher dispatcher, SubscriptionManager manager) {
         this.mDispatcher = dispatcher;
         this.mManager = manager;
     }
 
-    private FluxionAction newFluxionAction(String actionId, Object... data) {
+    private FluxAction newFluxionAction(String actionId, Object... data) {
         if (actionId.isEmpty()) {
             throw new IllegalArgumentException("Type must not be empty");
         }
         if (data.length % 2 != 0) {
             throw new IllegalArgumentException("Data must be a valid list of key,value pairs");
         }
-        FluxionAction.Builder actionBuilder = FluxionAction.type(actionId);
+        FluxAction.Builder actionBuilder = FluxAction.type(actionId);
         int i = 0;
         while (i < data.length) {
             String key = (String) data[i++];
@@ -56,7 +56,7 @@ public abstract class FluxionActionCreator {
      * @throws IllegalArgumentException - If the actionId is empty or if the data provided is not a valid set of key value pairs
      */
     protected void postAction(String actionId, Object... data) {
-        final FluxionAction action = newFluxionAction(actionId, data);
+        final FluxAction action = newFluxionAction(actionId, data);
         Subscription subscription = Observable.empty()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Object>() {
@@ -73,6 +73,6 @@ public abstract class FluxionActionCreator {
     }
 
     private void postError(Throwable throwable) {
-        mDispatcher.postFluxionActionError(new FluxionActionError(throwable));
+        mDispatcher.postFluxionActionError(new FluxActionError(throwable));
     }
 }

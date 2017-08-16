@@ -3,7 +3,7 @@ package com.nigelbrown.fluxion;
 /**
  * Implement this on Activity classes to leverage the Fluxion framework
  */
-public interface FluxionViewInterface extends BaseFluxionViewInterface {
+public interface FluxViewInterface extends BaseFluxViewInterface {
 	/**
 	 * Fluxion method to let the view create the stores that need for this activity, this method is
 	 * called every time the activity is created. Normally you will instantiate the store with the

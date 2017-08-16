@@ -13,13 +13,13 @@ public class Fluxion implements Application.ActivityLifecycleCallbacks {
 
     public static String TAG = "Fluxion";
     private static Fluxion sInstance;
-    private final FluxionBus mFluxionBus;
-    private final FluxionDispatcher mDispatcher;
+    private final FluxBus mFluxBus;
+    private final FluxDispatcher mDispatcher;
     private final SubscriptionManager mSubscriptionManager;
 
     private Fluxion(Application application) {
-        this.mFluxionBus = FluxionBus.getInstance();
-        this.mDispatcher = FluxionDispatcher.getInstance(mFluxionBus);
+        this.mFluxBus = FluxBus.getInstance();
+        this.mDispatcher = FluxDispatcher.getInstance(mFluxBus);
         this.mSubscriptionManager = SubscriptionManager.getInstance();
         application.registerActivityLifecycleCallbacks(this);
     }
@@ -47,16 +47,16 @@ public class Fluxion implements Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * @return the singleton instance of the {@link FluxionBus}
+     * @return the singleton instance of the {@link FluxBus}
      */
-    public FluxionBus getFluxionBus() {
-        return mFluxionBus;
+    public FluxBus getFluxBus() {
+        return mFluxBus;
     }
 
     /**
-     * @return the singleton instance of the {@link FluxionDispatcher}
+     * @return the singleton instance of the {@link FluxDispatcher}
      */
-    public FluxionDispatcher getDispatcher() {
+    public FluxDispatcher getDispatcher() {
         return mDispatcher;
     }
 
@@ -69,36 +69,36 @@ public class Fluxion implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-        if (activity instanceof FluxionViewInterface) {
-            ((FluxionViewInterface) activity).onRegisterStores();
-            mDispatcher.registerReaction((FluxionViewInterface) activity);
+        if (activity instanceof FluxViewInterface) {
+            ((FluxViewInterface) activity).onRegisterStores();
+            mDispatcher.registerReaction((FluxViewInterface) activity);
             ((AppCompatActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
                 @Override
                 public void onFragmentViewCreated(FragmentManager fm, Fragment f, View v, Bundle savedInstanceState) {
-                    if (f instanceof BaseFluxionViewInterface) {
-                        mDispatcher.registerReaction((BaseFluxionViewInterface) f);
+                    if (f instanceof BaseFluxViewInterface) {
+                        mDispatcher.registerReaction((BaseFluxViewInterface) f);
                     }
                 }
 
                 @Override
                 public void onFragmentViewDestroyed(FragmentManager fm, Fragment f) {
-                    if (f instanceof BaseFluxionViewInterface) {
-                        mDispatcher.unregister((BaseFluxionViewInterface) f);
+                    if (f instanceof BaseFluxViewInterface) {
+                        mDispatcher.unregister((BaseFluxViewInterface) f);
                     }
                 }
 
                 @Override
                 public void onFragmentAttached(FragmentManager fm, Fragment f, Context context) {
                     super.onFragmentAttached(fm, f, context);
-                    if (f instanceof BaseFluxionViewInterface) {
-                        mDispatcher.registerReaction((BaseFluxionViewInterface) f);
+                    if (f instanceof BaseFluxViewInterface) {
+                        mDispatcher.registerReaction((BaseFluxViewInterface) f);
                     }
                 }
 
                 @Override
                 public void onFragmentDetached(FragmentManager fm, Fragment f) {
-                    if (f instanceof BaseFluxionViewInterface) {
-                        mDispatcher.unregister((BaseFluxionViewInterface) f);
+                    if (f instanceof BaseFluxViewInterface) {
+                        mDispatcher.unregister((BaseFluxViewInterface) f);
                     }
                     super.onFragmentDetached(fm, f);
                 }

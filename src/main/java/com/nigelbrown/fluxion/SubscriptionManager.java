@@ -7,7 +7,7 @@ import rx.Subscription;
 
 /**
  * Responsible for managing the subscriptions of observables created for actions
- * when {@link FluxionActionCreator#postAction(String, Object...) FluxionActionCreator.postAction()} is called.
+ * when {@link FluxActionCreator#postAction(String, Object...) FluxActionCreator.postAction()} is called.
  */
 public class SubscriptionManager {
     private static SubscriptionManager sInstance;
@@ -26,19 +26,19 @@ public class SubscriptionManager {
      * Given an action and a subscription, add the new subscription and unsubscribe if there
      * was an existing one.
      */
-    public void add(FluxionAction action, Subscription subscription) {
+    public void add(FluxAction action, Subscription subscription) {
         Pair<Integer, Subscription> old = mMap.put(action.getType(), getPair(action, subscription));
         if (old != null && !old.second.isUnsubscribed()) { old.second.unsubscribe(); }
     }
 
-    private Pair<Integer, Subscription> getPair(FluxionAction action, Subscription subscription) {
+    private Pair<Integer, Subscription> getPair(FluxAction action, Subscription subscription) {
         return new Pair<>(action.hashCode(), subscription);
     }
 
     /**
      * Remove an rxAction and unsubscribe from it
      */
-    public void remove(FluxionAction action) {
+    public void remove(FluxAction action) {
         Pair<Integer, Subscription> old = mMap.remove(action.getType());
         if (old != null && !old.second.isUnsubscribed()) { old.second.unsubscribe(); }
     }
@@ -48,7 +48,7 @@ public class SubscriptionManager {
      *
      * @return true if the exact action is inside the map and running
      */
-    public boolean contains(FluxionAction action) {
+    public boolean contains(FluxAction action) {
         Pair<Integer, Subscription> old = mMap.get(action.getType());
         return (old != null && old.first == action.hashCode() && !old.second.isUnsubscribed());
     }
